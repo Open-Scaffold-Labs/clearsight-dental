@@ -21,12 +21,14 @@ export default function Home() {
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) return;
     setPreviewUrl(URL.createObjectURL(file));
     setAnalyzing(true);
     setResult(null);
+    setError(null);
 
     const formData = new FormData();
     formData.append('xray', file);
@@ -37,6 +39,7 @@ export default function Home() {
       setResult(data);
     } catch (err) {
       console.error('Analysis failed:', err);
+      setError('Analysis failed. Please try again.');
     } finally {
       setAnalyzing(false);
     }
@@ -102,9 +105,19 @@ export default function Home() {
                   <p className="text-lg font-medium text-slate-700">Analyzing X-Ray...</p>
                   <p className="text-sm text-slate-500">Running YOLOv8 + DentalGPT inference</p>
                 </div>
+              ) : error ? (
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+                    <FileX2 className="w-8 h-8 text-red-600" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-medium text-red-700">{error}</p>
+                    <p className="text-sm text-slate-500 mt-1">Click or drop another image to try again</p>
+                  </div>
+                </div>
               ) : previewUrl && result ? (
                 <div className="space-y-4">
-                  <img src={result.annotated_url || previewUrl} alt="Analyzed X-Ray" className="mx-auto max-h-96 rounded-lg" />
+                  <img src={previewUrl} alt="Analyzed X-Ray" className="mx-auto max-h-96 rounded-lg" />
                   <div className="flex items-center justify-center gap-2 text-sm text-green-600 font-medium">
                     <Shield className="w-4 h-4" />
                     Analysis complete in {result.inference_time_ms}ms
