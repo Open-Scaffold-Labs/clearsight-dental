@@ -1,52 +1,54 @@
-'use client'
+'use client';
 
-import { useState, useCallback } from 'react'
-import { Upload, Scan, Shield, Zap, ChevronRight, FileX2 } from 'lucide-react'
+import { useState, useCallback } from 'react';
+import { Upload, Scan, Shield, Zap, ChevronRight, FileX2 } from 'lucide-react';
 
 type Detection = {
-  class: string
-  confidence: number
-  bbox: [number, number, number, number]
-}
+  class: string;
+  confidence: number;
+  bbox: [number, number, number, number];
+};
 
 type AnalysisResult = {
-  image_url: string
-  annotated_url: string
-  detections: Detection[]
-  inference_time_ms: number
-}
+  image_url: string;
+  annotated_url: string;
+  detections: Detection[];
+  inference_time_ms: number;
+};
 
 export default function Home() {
-  const [dragOver, setDragOver] = useState(false)
-  const [analyzing, setAnalyzing] = useState(false)
-  const [result, setResult] = useState<AnalysisResult | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const handleFile = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) return
-    setPreviewUrl(URL.createObjectURL(file))
-    setAnalyzing(true)
-    setResult(null)
+  const [dragOver, setDragOver] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-    const formData = new FormData()
-    formData.append('xray', file)
+  const handleFile = useCallback(async (file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    setPreviewUrl(URL.createObjectURL(file));
+    setAnalyzing(true);
+    setResult(null);
+
+    const formData = new FormData();
+    formData.append('xray', file);
 
     try {
-      const res = await fetch('/api/analyze', { method: 'POST', body: formData })
-      const data = await res.json()
-      setResult(data)
+      const res = await fetch('/api/analyze', { method: 'POST', body: formData });
+      const data = await res.json();
+      setResult(data);
     } catch (err) {
-      console.error('Analysis failed:', err)
+      console.error('Analysis failed:', err);
     } finally {
-      setAnalyzing(false)
+      setAnalyzing(false);
     }
-  }, [])
+  }, []);
 
   const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setDragOver(false)
-    const file = e.dataTransfer.files[0]
-    if (file) handleFile(file)
-  }, [handleFile])
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  }, [handleFile]);
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white border-b border-slate-200">
@@ -72,29 +74,11 @@ export default function Home() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          {[
-            { label: 'Conditions Detected', value: '4', icon: Scan, color: 'blue' },
-            { label: 'Avg. Inference', value: '<3s', icon: Zap, color: 'amber' },            { label: 'FDA Pathway', value: '510(k)', icon: Shield, color: 'green' },
-            { label: 'Monthly Cost', value: '$99', icon: FileX2, color: 'purple' },
-          ].map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="bg-white rounded-xl border border-slate-200 p-5">
-              <div className="flex items-center gap-3 mb-2">
-                <div className={`w-8 h-8 rounded-lg bg-${color}-100 flex items-center justify-center`}>
-                  <Icon className={`w-4 h-4 text-${color}-600`} />
-                </div>
-                <span className="text-2xl font-bold text-slate-900">{value}</span>
-              </div>
-              <p className="text-sm text-slate-500">{label}</p>
-            </div>
-          ))}
-        </div>
-
         <div className="grid grid-cols-3 gap-6">
           <div className="col-span-2">
             <div
               onDrop={onDrop}
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+              onDragOver={(e: React.DragEvent) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
               className={`rounded-xl border-2 border-dashed p-12 text-center transition-all cursor-pointer ${
                 dragOver
@@ -102,13 +86,14 @@ export default function Home() {
                   : 'border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
               }`}
               onClick={() => {
-                const input = document.createElement('input')
-                input.type = 'file'                input.accept = 'image/*'
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
                 input.onchange = (e) => {
-                  const file = (e.target as HTMLInputElement).files?.[0]
-                  if (file) handleFile(file)
-                }
-                input.click()
+                  const file = (e.target as HTMLInputElement).files?.[0];
+                  if (file) handleFile(file);
+                };
+                input.click();
               }}
             >
               {analyzing ? (
@@ -132,7 +117,8 @@ export default function Home() {
                   </div>
                   <div>
                     <p className="text-lg font-medium text-slate-700">Drop dental X-ray here</p>
-                    <p className="text-sm text-slate-500 mt-1">PNG, JPEG, or DICOM — Panoramic, Bitewing, or Periapical</p>                  </div>
+                    <p className="text-sm text-slate-500 mt-1">PNG, JPEG, or DICOM - Panoramic, Bitewing, or Periapical</p>
+                  </div>
                 </div>
               )}
             </div>
@@ -163,12 +149,13 @@ export default function Home() {
               </div>
             )}
           </div>
+
           <div className="space-y-4">
             <div className="bg-white rounded-xl border border-slate-200 p-5">
               <h3 className="font-semibold text-slate-900 mb-4">Detection Capabilities</h3>
               <div className="space-y-3">
                 {[
-                  { name: 'Caries', desc: 'Early & advanced cavity detection', status: 'active' },
+                  { name: 'Caries', desc: 'Early and advanced cavity detection', status: 'active' },
                   { name: 'Deep Caries', desc: 'Advanced decay near pulp', status: 'active' },
                   { name: 'Impacted Teeth', desc: 'Unerupted/misaligned teeth', status: 'active' },
                   { name: 'Periapical Lesion', desc: 'Infection at tooth root', status: 'active' },
@@ -191,7 +178,8 @@ export default function Home() {
               <p className="text-sm text-blue-100 leading-relaxed">
                 Built on DentalGPT (7B) and YOLOv8, fine-tuned with Bay Area dentist consortium data.
                 Transparent, auditable, and clinically validated.
-              </p>              <a href="https://github.com/FreedomIntelligence/DentalGPT" className="inline-flex items-center gap-1 text-sm font-medium text-white mt-3 hover:underline">
+              </p>
+              <a href="https://github.com/FreedomIntelligence/DentalGPT" className="inline-flex items-center gap-1 text-sm font-medium text-white mt-3 hover:underline">
                 View model source <ChevronRight className="w-3 h-3" />
               </a>
             </div>
@@ -221,5 +209,5 @@ export default function Home() {
         </div>
       </main>
     </div>
-  )
+  );
 }
