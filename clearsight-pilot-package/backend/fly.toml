@@ -1,0 +1,52 @@
+# ClearSight Dental — hosted pilot backend on Fly.io
+#
+# Deploy with:
+#   fly deploy --app clearsight-backend-pilot \
+#              --vm-gpu-kind a100-pcie-40gb \
+#              --vm-memory 32768
+#
+# Secrets (set via fly secrets set ... -a clearsight-backend-pilot):
+#   DATABASE_URL           Pooled Neon postgres URL
+#   HF_TOKEN               Hugging Face token
+#   PILOT_TENANT_ID        dia-basher-dds
+#   AUDIT_LOG_RETENTION_DAYS  2190   (= 6 years, HIPAA minimum)
+#   FRONTEND_ORIGIN        https://<your-vercel-url>.vercel.app
+#   SHARED_API_SECRET      random 32-byte base64 string; frontend presents this in Authorization header
+
+app = "clearsight-backend-pilot"
+primary_region = "iad"   # pick the region closest to your Neon primary
+kill_signal = "SIGINT"
+kill_timeout = 30
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  LOG_LEVEL = "info"
+  MODEL_NAME = "oralgpt-omni-7b"
+  PORT = "8000"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "suspend"   # save GPU minutes when idle
+  auto_start_machines = true
+  min_machines_running = 0          # pilot scale: cold-start OK; set to 1 for always-warm
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "180s"           # model load takes ~90s on A100
+    interval = "30s"
+    method = "GET"
+    timeout = "10s"
+    path = "/healthz"
+
+[[vm]]
+  size = "performance-8x"
+  memory = "32gb"
+  gpu_kind = "a100-pcie-40gb"
+  gpus = 1
+
+[metrics]
+  port = 8000
+  path = "/metrics"

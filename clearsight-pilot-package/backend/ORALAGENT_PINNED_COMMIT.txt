@@ -1,0 +1,14 @@
+# OralAgent pinned commit
+#
+# Format: one line with the full 40-char commit SHA from
+#   https://github.com/isbrycee/OralAgent
+#
+# Rationale:
+# - We vendor OralAgent at a specific commit to keep the backend image
+#   reproducible. Re-pinning requires re-baking the Docker image and a
+#   smoke test against the pilot tenant before promotion.
+# - Update this file, then rebuild with:
+#     flyctl deploy --build-arg ORALAGENT_REF=$(cat backend/ORALAGENT_PINNED_COMMIT.txt)
+#
+# PLACEHOLDER — replace before first production deploy.
+REPLACE_WITH_SHA_BEFORE_DEPLOY
