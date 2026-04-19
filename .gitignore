@@ -3,3 +3,13 @@ node_modules
 .env.local
 .env*.local
 .vercel
+# Next.js auto-generated
+next-env.d.ts
+
+# Disabled source files
+*.disabled
+.venv/
+services/inference/.venv/
+services/inference/models_cache/
+__pycache__/
+*.pyc
